@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: nginx-fe
+  name: nginx-fe
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-fe
+  template:
+    metadata:
+      labels:
+        app: nginx-fe
+    spec:
+      containers:
+      - image: nginx:latest
+        name: nginx
+        ports:
+        - containerPort: 80
+        resources: 
+          requests:
+            memory: "250Mi"
+            cpu: "250m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+        volumeMounts:
+          - name: frontend-config
+            mountPath: /etc/nginx/conf.d
+          - name: frontend-config
+            mountPath: /usr/share/nginx/html
+      volumes:
+        - name: frontend-config
+          configMap:
+            name: frontend-config

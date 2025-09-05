@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+data:
+  default.conf: |
+    server {
+      listen 80;
+      server_name _;
+
+      # serve SPA/static index
+      location / {
+        root /usr/share/nginx/html;
+        try_files /index.html =404;
+      }
+
+      # reverse proxies into the cluster
+      location /api/product {
+        proxy_pass http://product-svc/;
+      }
+      location /api/order {
+        proxy_pass http://order-svc/;
+      }
+    }
+  index.html: |
+    <!doctype html>
+    <html>
+    <head><meta charset="utf-8" /><title>Frontend</title></head>
+    <body style="font-family: sans-serif">
+      <h1>Frontend</h1>
+      <p><a href="/api/product" target="_blank">/api/product</a></p>
+      <p><a href="/api/order" target="_blank">/api/order</a></p>
+      <pre id="out"></pre>
+      <script>
+        Promise.all([
+          fetch('/api/product').then(r=>r.text()),
+          fetch('/api/order').then(r=>r.text())
+        ]).then(([p,o])=>{
+          document.getElementById('out').textContent =
+            'Product ➜ ' + p + '\nOrder   ➜ ' + o;
+        }).catch(e=>{ document.getElementById('out').textContent = e; });
+      </script>
+    </body>
+    </html>
